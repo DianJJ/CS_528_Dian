@@ -12,7 +12,10 @@ public class ConstellationHover : MonoBehaviour
     public GameObject infoPanelLMi; // Assign your info panel here
     public GameObject infoPanelAri; // Assign your info panel here
     public GameObject infoPanelLib;
-
+    void Start()
+    {
+        HidePanel();
+    }
     void Update()
     {
         // Check if the mouse is over a UI element
@@ -23,7 +26,7 @@ public class ConstellationHover : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit))
         {
-            Debug.Log($"Hit: {hit.collider.gameObject.name} with tag {hit.collider.tag}");
+            //Debug.Log($"Hit: {hit.collider.gameObject.name} with tag {hit.collider.tag}");
             // Check if the hit object is part of a constellation
             if (hit.collider.gameObject.CompareTag("Lib")) // Make sure your constellation lines have this tag
             {
@@ -39,6 +42,7 @@ public class ConstellationHover : MonoBehaviour
             }
             if (hit.collider.gameObject.CompareTag("LMi")) // Make sure your constellation lines have this tag
             {
+                Debug.Log("hit LMi");
                 ShowPanelLMi(hit.collider.gameObject);
             }
             if (hit.collider.gameObject.CompareTag("Ari")) // Make sure your constellation lines have this tag

@@ -6,7 +6,6 @@ using System;
 
 public class ShiningStar : MonoBehaviour
 {
-    public GameObject starPrefab; // Prefab used to represent stars.
     public string csvFilePath; // CSV file path.
 
     private List<StarData> starsData = new List<StarData>();
@@ -14,6 +13,7 @@ public class ShiningStar : MonoBehaviour
     private List<LineRenderer> LineRenderers = new List<LineRenderer>();
     private bool constellationLineRendererEnable = true;
 
+    public Material starMaterial;
 
 
     void Start()
@@ -22,10 +22,31 @@ public class ShiningStar : MonoBehaviour
         CreateStars();
         LoadConstellations("Assets/module-omicron/constellationship.fab");
         DrawConstellations();
+
+        foreach (Constellation constellation in constellations)
+        {
+            CreateConstellationCollider(constellation);
+        }
+        //OnDrawGizmos();
+
     }
     void Update()
     {
         UpdateConstellationLine();
+        foreach (Constellation constellation in constellations)
+        {
+            UpdateConstellationCollider(constellation);
+        }
+    }
+
+    void OnDrawGizmos()
+    {
+        foreach (Constellation constellation in constellations)
+        {
+            Bounds bounds = CalculateConstellationBounds(constellation);
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireCube(bounds.center, bounds.size);
+        }
     }
 
     void UpdateConstellationLine()
@@ -48,32 +69,44 @@ public class ShiningStar : MonoBehaviour
                         constellations[i].LineRenderers[k].SetPosition(0, starObject_1.transform.position);
                         constellations[i].LineRenderers[k].SetPosition(1, starObject_2.transform.position);
 
+
                         // Optionally, if you want to tag the GameObject to which the LineRenderer is attachedif
-                        if (constellations[i].NAME == "Lib")
-                        {
-                            constellations[i].LineRenderers[k].gameObject.tag = "Lib";
-                        }
+                        //Debug.Log(constellations[i].NAME);
+                        //constellations[i].LineRenderers[k].gameObject.tag = constellations[i].NAME;
+                        //if (constellations[i].NAME == "Lib")
+                        //{
+                        //    constellations[i].LineRenderers[k].gameObject.tag = "Lib";
+                        //}
 
-                        if (constellations[i].NAME == "Ari")
-                        {
-                            constellations[i].LineRenderers[k].gameObject.tag = "Ari";
-                        }
+                        //if (constellations[i].NAME == "Ari")
+                        //{
+                        //    constellations[i].LineRenderers[k].gameObject.tag = "Ari";
+                        //}
 
-                        if (constellations[i].NAME == "Vul")
-                        {
-                            constellations[i].LineRenderers[k].gameObject.tag = "Vul";
-                        }
-                        if (constellations[i].NAME == "Tuc")
-                        {
-                            constellations[i].LineRenderers[k].gameObject.tag = "Tuc";
-                        }
+                        //if (constellations[i].NAME == "Vul")
+                        //{
+                        //    constellations[i].LineRenderers[k].gameObject.tag = "Vul";
+                        //}
+                        //if (constellations[i].NAME == "Tuc")
+                        //{
+                        //    constellations[i].LineRenderers[k].gameObject.tag = "Tuc";
+                        //}
 
-                        if (constellations[i].NAME == "LMi")
-                        {
-                            constellations[i].LineRenderers[k].gameObject.tag = "LMi";
-                            Debug.Log("success");
-                        }
-                        k++; // Increment k for the next line within the same constellation
+                        //if (constellations[i].NAME == "LMi")
+                        //{
+                            //Debug.Log(constellations[i].NAME);
+                            //constellations[i].LineRenderers[k].gameObject.tag = "LMi";
+                        //}
+                         // Increment k for the next line within the same constellation
+                        
+                        //BoxCollider collider = constellations[i].LineRenderers[k].GetComponent<BoxCollider>();
+                        //if (collider == null)
+                        //{
+                            //collider = constellations[i].LineRenderers[k].gameObject.AddComponent<BoxCollider>();
+                            //collider.isTrigger = true; // Set as trigger if you don't want it to physically block objects
+                        //}
+                        //AdjustColliderToLine(collider, starObject_1.transform.position, starObject_2.transform.position);
+                        k++;
                     }
                 }
             }
@@ -171,6 +204,7 @@ public class ShiningStar : MonoBehaviour
 
     public void IncreaseStarVelocity()
     {
+        Debug.Log("IncreaseStarVelocity");
         foreach (var star in starsData)
         {
             float increaseTime = 10.0f; // Define how much you want to increase the velocity
@@ -219,17 +253,17 @@ public class ShiningStar : MonoBehaviour
     {
         try
         {
-            Debug.Log("Start loading csv file");
+            //Debug.Log("Start loading csv file");
             string[] csvLines = File.ReadAllLines(csvFilePath);
 
             for (int i = 1; i < csvLines.Length; i++) // Read from the second line; the first line is typically the header.
             {
                 string[] values = csvLines[i].Split(',');
 
-                Debug.Log("Start spliting csv file");
+                //Debug.Log("Start spliting csv file");
                 // Parse the CSV data and create StarData objects.
                 StarData star = new StarData();
-                Debug.Log("Start loading ID");
+                //Debug.Log("Start loading ID");
                 star.ID = int.Parse(values[0]);
 
                 if (!string.IsNullOrEmpty(values[1]) && !string.IsNullOrEmpty(values[3]) && !string.IsNullOrEmpty(values[3]) && !string.IsNullOrEmpty(values[4]) && !string.IsNullOrEmpty(values[5])
@@ -254,11 +288,11 @@ public class ShiningStar : MonoBehaviour
                 }
 
                 // Check and add valid star data.
-                if ((10.326 < star.DIST) && (star.DIST < 30 * 3.262) && !float.IsNaN(star.HIP) && !string.IsNullOrEmpty(star.SPECT) && !float.IsNaN(star.X0) && !float.IsNaN(star.Y0) && !float.IsNaN(star.Z0))
+                if ((star.DIST < 25* 3.262) && !float.IsNaN(star.HIP) && !string.IsNullOrEmpty(star.SPECT) && !float.IsNaN(star.X0) && !float.IsNaN(star.Y0) && !float.IsNaN(star.Z0))
                 {
 
                     starsData.Add(star);
-                    Debug.Log(star);
+                    //Debug.Log(star);
                 }
             }
 
@@ -270,25 +304,62 @@ public class ShiningStar : MonoBehaviour
         }
     }
 
+    //void CreateStars()
+    //{
+     //   foreach (var starData in starsData)
+     //   {
+            // Create star objects based on StarData.
+     //       GameObject starObject = Instantiate(starPrefab, new Vector3(starData.X0, starData.Y0, starData.Z0), Quaternion.identity);
+     //       starObject.name = $"Star_{starData.HIP}";
+
+            // Set star size based on brightness.
+     //       float starSize = Mathf.Clamp(5.0f / starData.ABSMAG, 0.1f, 50.0f);
+     //       starObject.transform.localScale = new Vector3(starSize, starSize, starSize);
+
+            // Set star color based on spectral type.
+     //       Color starColor = GetColorBySpectralType(starData.SPECT);
+     //       starObject.GetComponent<Renderer>().material.color = starColor;
+
+            //Place the star objects in the scene.
+    //        starObject.transform.SetParent(transform);
+
+    //        starObject.AddComponent<StarOrbit>().InitializeOrbit(starData, transform);
+    //    }
+    //}
+
     void CreateStars()
     {
         foreach (var starData in starsData)
         {
-            // Create star objects based on StarData.
-            GameObject starObject = Instantiate(starPrefab, new Vector3(starData.X0, starData.Y0, starData.Z0), Quaternion.identity);
+            // Create a Quad for the star.
+            GameObject starObject = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            Destroy(starObject.GetComponent<Collider>()); // Quads come with a collider component that you likely don't need.
+            starObject.transform.position = new Vector3(starData.X0, starData.Y0, starData.Z0);
             starObject.name = $"Star_{starData.HIP}";
 
             // Set star size based on brightness.
-            float starSize = Mathf.Clamp(1.0f / starData.ABSMAG, 0.1f, 10.0f);
+            float starSize = Mathf.Clamp(10.0f / starData.ABSMAG, 0.1f, 50.0f);
             starObject.transform.localScale = new Vector3(starSize, starSize, starSize);
 
-            // Set star color based on spectral type.
-            Color starColor = GetColorBySpectralType(starData.SPECT);
-            starObject.GetComponent<Renderer>().material.color = starColor;
+            // Apply the custom shader Material.
+            starObject.GetComponent<Renderer>().material = starMaterial;
 
-            //Place the star objects in the scene.
+            // Optionally adjust material properties per star, e.g., color based on spectral type.
+            // This assumes your shader/material supports a "_Color" property.
+            Color starColor = GetColorBySpectralType(starData.SPECT);
+            starObject.GetComponent<Renderer>().material.SetColor("_Color", starColor);
+
+            // Place the star objects in the scene.
             starObject.transform.SetParent(transform);
 
+            // Ensure the Quad faces the camera. Assuming you have a Billboard script as discussed.
+            //starObject.AddComponent<Billboard>().cam = Camera.main;
+            if (starObject.GetComponent<Billboard>() == null)
+            {
+                Billboard billboardComponent = starObject.AddComponent<Billboard>();
+                billboardComponent.cam = Camera.main; // Assuming your billboard script uses a 'cam' variable to reference the camera
+            }
+            // Initialize star orbit if necessary.
             starObject.AddComponent<StarOrbit>().InitializeOrbit(starData, transform);
         }
     }
@@ -297,7 +368,7 @@ public class ShiningStar : MonoBehaviour
     {
         string[] constellationLines = File.ReadAllLines(fabFilePath);
 
-        Debug.Log("successful loading the constellation file");
+        //Debug.Log("successful loading the constellation file");
 
 
 
@@ -317,12 +388,12 @@ public class ShiningStar : MonoBehaviour
             constellation.NAME = constellationName;
 
             constellation.PAIR_NUMBER = starCount;
-            Debug.Log("successful parsing the constellation file");
+            //Debug.Log("successful parsing the constellation file");
 
             //The HIP (Hipparcos) number of stars begins from the third element.
             for (int i = 2; i < constellationData.Length - 1; i += 2)
             {
-                Debug.Log("i: " + i + ", constellationData.Length: " + constellationData.Length);
+                //Debug.Log("i: " + i + ", constellationData.Length: " + constellationData.Length);
 
                 //Debug.Log(constellationData.Length);
                 int hipNumber_1 = int.Parse(constellationData[i]);
@@ -332,8 +403,8 @@ public class ShiningStar : MonoBehaviour
 
                 //Debug.Log("successful load the hip");
                 //Find the corresponding star objects.
-                Debug.Log("hipNumber_1" + hipNumber_1);
-                Debug.Log("hipNumber_2" + hipNumber_2);
+                //Debug.Log("hipNumber_1" + hipNumber_1);
+                //Debug.Log("hipNumber_2" + hipNumber_2);
                 GameObject starObject_1 = FindStarByHIP(hipNumber_1);
 
                 GameObject starObject_2 = FindStarByHIP(hipNumber_2);
@@ -341,7 +412,7 @@ public class ShiningStar : MonoBehaviour
                 //Debug.Log("successful find the star by hip");
                 if (starObject_1 != null && starObject_1 != null)
                 {
-                    Debug.Log("successful add the star pair");
+                    //Debug.Log("successful add the star pair");
                     Tuple<GameObject, GameObject> starpair = Tuple.Create(starObject_1, starObject_2);
 
                     constellation.STAR_PAIRS.Add(starpair);
@@ -360,8 +431,8 @@ public class ShiningStar : MonoBehaviour
                 //  break;  // 
                 //}
             }
-            Debug.Log("pair length:"+ constellation.STAR_PAIRS.Count);
-            Debug.Log("successful add the constellation");
+            //Debug.Log("pair length:"+ constellation.STAR_PAIRS.Count);
+            //Debug.Log("successful add the constellation");
             if (constellation.STAR_PAIRS.Count == starCount)
             {
                 constellations.Add(constellation);
@@ -403,8 +474,8 @@ public class ShiningStar : MonoBehaviour
                 if (starObject_1 != null && starObject_2 != null)
                 {
                     // You are attempting to draw lines or other geometric shapes between stars to represent constellations.
-                    Debug.Log("successfull draw lines");
-                    Debug.Log("star1 position: "+starObject_1.transform.position+ "star2 position: "+starObject_2.transform.position);
+                    //Debug.Log("successfull draw lines");
+                    //Debug.Log("star1 position: "+starObject_1.transform.position+ "star2 position: "+starObject_2.transform.position);
                     //LineRenderers.Add(lineRenderer);
                     DrawConstellationLine(starObject_1.transform.position, starObject_2.transform.position, constellations[i]);
                 }
@@ -433,7 +504,7 @@ public class ShiningStar : MonoBehaviour
         //GameObject constellationLine = new GameObject("ConstellationLine");
         //constellationLine.transform.position = starPosition_1;
         //constellationLine.AddComponent<LineRenderer>();
-        Debug.Log("successfull draw lines");
+        //Debug.Log("successfull draw lines");
         //LineRenderer lineRenderer = gameObject.AddComponent<LineRenderer>();
         //Debug.Log(lineRenderer);
         //LineRenderer lineRenderer = GetComponent<LineRenderer>();
@@ -449,17 +520,93 @@ public class ShiningStar : MonoBehaviour
 
         if (lineRenderer != null)
         {
-            Debug.Log("line renderer is not null");
+            //Debug.Log("line renderer is not null");
             
             lineRenderer.positionCount = 2;
             lineRenderer.SetPosition(0, starPosition_1);
             lineRenderer.SetPosition(1, starPosition_2);
+
+            //Add collider
+            //BoxCollider collider = constellationLine.AddComponent<BoxCollider>();
+            //collider.isTrigger = true; // Set as trigger if you don't want it to physically block objects
+            //AdjustColliderToLine(collider, starPosition_1, starPosition_2);
+
+
             LineRenderers.Add(lineRenderer);
             constellation.LineRenderers.Add(lineRenderer);
         }
 
     }
 
+    //void AdjustColliderToLine(BoxCollider collider, Vector3 startPoint, Vector3 endPoint)
+    //{
+        //Vector3 midPoint = (startPoint + endPoint) / 2;
+        //collider.transform.position = midPoint; // Position at the midpoint
+
+        //float lineLength = Vector3.Distance(startPoint, endPoint);
+        // Assuming the line's thickness is minimal, adjust the X or Y scale for the collider's thickness
+        //collider.size = new Vector3(10f, 10f, lineLength); // Z is length here
+
+        // Correctly orient the collider
+        //Vector3 vectorToTarget = endPoint - startPoint;
+        //Quaternion targetRotation = Quaternion.LookRotation(vectorToTarget);
+        // Apply rotation. Because BoxCollider is along the z-axis, this directly applies.
+        //collider.transform.rotation = targetRotation;
+    //}
+
+    Bounds CalculateConstellationBounds(Constellation constellation)
+    {
+        if (constellation.STAR_PAIRS.Count == 0) return new Bounds();
+
+        Vector3 min = constellation.STAR_PAIRS[0].Item1.transform.position;
+        Vector3 max = constellation.STAR_PAIRS[0].Item1.transform.position;
+
+        foreach (var starPair in constellation.STAR_PAIRS)
+        {
+            if (starPair.Item1 != null && starPair.Item2 != null)
+            {
+                min = Vector3.Min(min, starPair.Item1.transform.position);
+                min = Vector3.Min(min, starPair.Item2.transform.position);
+
+                max = Vector3.Max(max, starPair.Item1.transform.position);
+                max = Vector3.Max(max, starPair.Item2.transform.position);
+            }
+        }
+
+        Vector3 center = (min + max) / 2;
+        Vector3 size = max - min;
+
+        return new Bounds(center, size);
+    }
+
+    void CreateConstellationCollider(Constellation constellation)
+    {
+        Bounds bounds = CalculateConstellationBounds(constellation);
+        //Debug.DrawLine(bounds.min, bounds.max, Color.red, 20f);
+        GameObject constellationColliderGO = new GameObject($"{constellation.NAME} Collider");
+        BoxCollider collider = constellationColliderGO.AddComponent<BoxCollider>();
+        collider.center = bounds.center - constellationColliderGO.transform.position;
+        collider.size = bounds.size;
+        collider.isTrigger = true;
+
+        constellationColliderGO.transform.parent = this.transform;
+
+        constellationColliderGO.tag = constellation.NAME;
+
+        constellation.ColliderGameObject = constellationColliderGO; // Assign the collider GameObject here
+        
+    }
+    void UpdateConstellationCollider(Constellation constellation)
+    {
+        if (constellation.ColliderGameObject == null) return;
+
+        Bounds bounds = CalculateConstellationBounds(constellation);
+        BoxCollider collider = constellation.ColliderGameObject.GetComponent<BoxCollider>();
+
+        // Adjust the collider's center and size
+        collider.center = bounds.center - constellation.ColliderGameObject.transform.position; // Ensure this is relative to the collider's GameObject
+        collider.size = bounds.size;
+    }
 }
 
 // 星星数据类
@@ -482,6 +629,7 @@ public class Constellation
     public int PAIR_NUMBER;
     public List<Tuple<GameObject, GameObject>> STAR_PAIRS = new List<Tuple<GameObject, GameObject>>();
     public List<LineRenderer> LineRenderers = new List<LineRenderer>();
+    public GameObject ColliderGameObject;
 }
 
 public class StarOrbit : MonoBehaviour
