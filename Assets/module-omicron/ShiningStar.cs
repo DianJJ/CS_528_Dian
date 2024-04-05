@@ -13,8 +13,10 @@ public class ShiningStar : MonoBehaviour
     private List<LineRenderer> LineRenderers = new List<LineRenderer>();
     private bool constellationLineRendererEnable = true;
 
-    public Material starMaterial;
+    public TextAsset csvFile;
 
+    public Material starMaterial;
+    public Material lineMaterial;
 
     void Start()
     {
@@ -132,7 +134,18 @@ public class ShiningStar : MonoBehaviour
             }
         }
     }
+    public void ToggleConstellationUrsaMajor()
+    {
+        // This assumes you have a way to enable/disable a constellation.
+        // For example, you could disable all line renderers associated with this constellation.
+        Constellation constellation = GetConstellationByName("UMa");
 
+        bool isVisible = !constellation.LineRenderers[0].enabled;
+        foreach (var lineRenderer in constellation.LineRenderers)
+        {
+            lineRenderer.enabled = isVisible;
+        }
+    }
     public void ToggleConstellationLibra()
     {
         // This assumes you have a way to enable/disable a constellation.
@@ -164,7 +177,7 @@ public class ShiningStar : MonoBehaviour
         // This assumes you have a way to enable/disable a constellation.
         // For example, you could disable all line renderers associated with this constellation.
         Constellation constellation = GetConstellationByName("LMi");
-
+        Debug.Log("IncreaseStarVelocity");
         bool isVisible = !constellation.LineRenderers[0].enabled;
         foreach (var lineRenderer in constellation.LineRenderers)
         {
@@ -207,7 +220,7 @@ public class ShiningStar : MonoBehaviour
         Debug.Log("IncreaseStarVelocity");
         foreach (var star in starsData)
         {
-            float increaseTime = 10.0f; // Define how much you want to increase the velocity
+            float increaseTime = 1000.0f; // Define how much you want to increase the velocity
             star.VX *= increaseTime;
             star.VY *= increaseTime;
             star.VZ *= increaseTime;
@@ -218,7 +231,7 @@ public class ShiningStar : MonoBehaviour
     {
         foreach (var star in starsData)
         {
-            float increaseTime = 0.1f; // Define how much you want to increase the velocity
+            float increaseTime = 0.001f; // Define how much you want to increase the velocity
             star.VX *= increaseTime;
             star.VY *= increaseTime;
             star.VZ *= increaseTime;
@@ -229,10 +242,12 @@ public class ShiningStar : MonoBehaviour
     {
         foreach (var star in starsData)
         {
-            float increaseTime = 10.0f; // Define how much you want to increase the velocity
+            //float increaseTime = 10.0f; // Define how much you want to increase the velocity
             star.VX = star.VX_ori;
-            star.VY *= star.VY_ori;
-            star.VZ *= star.VZ_ori;
+            star.VY = star.VY_ori;
+            star.VZ = star.VZ_ori;
+            GameObject starObject = FindStarByHIP(star.HIP);
+            starObject.transform.position = new Vector3(star.X0_ori, star.Y0_ori, star.Z0_ori);
         }
     }
 
@@ -254,7 +269,7 @@ public class ShiningStar : MonoBehaviour
         try
         {
             //Debug.Log("Start loading csv file");
-            string[] csvLines = File.ReadAllLines(csvFilePath);
+            string[] csvLines = csvFile.text.Split('\n');
 
             for (int i = 1; i < csvLines.Length; i++) // Read from the second line; the first line is typically the header.
             {
@@ -284,6 +299,9 @@ public class ShiningStar : MonoBehaviour
                     star.VX_ori = float.Parse(values[8]) * 1.02269E-6f;
                     star.VY_ori = float.Parse(values[9]) * 1.02269E-6f;
                     star.VZ_ori = float.Parse(values[10]) * 1.02269E-6f;
+                    star.X0_ori = float.Parse(values[3]) * 5;
+                    star.Y0_ori = float.Parse(values[4]) * 5;
+                    star.Z0_ori= float.Parse(values[5]) * 5;
                     star.SPECT = values[11];
                 }
 
@@ -433,11 +451,12 @@ public class ShiningStar : MonoBehaviour
             }
             //Debug.Log("pair length:"+ constellation.STAR_PAIRS.Count);
             //Debug.Log("successful add the constellation");
-            if (constellation.STAR_PAIRS.Count == starCount)
-            {
-                constellations.Add(constellation);
-            }
-            
+            //if (constellation.STAR_PAIRS.Count == starCount)
+            //{
+            //    constellations.Add(constellation);
+            //}
+            constellations.Add(constellation);
+
         }
     }
 
@@ -500,58 +519,45 @@ public class ShiningStar : MonoBehaviour
 
     void DrawConstellationLine(Vector3 starPosition_1, Vector3 starPosition_2, Constellation constellation)
     {
-        // draw lines or geometric shapes between stars to represent constellations. 
-        //GameObject constellationLine = new GameObject("ConstellationLine");
-        //constellationLine.transform.position = starPosition_1;
-        //constellationLine.AddComponent<LineRenderer>();
-        //Debug.Log("successfull draw lines");
-        //LineRenderer lineRenderer = gameObject.AddComponent<LineRenderer>();
-        //Debug.Log(lineRenderer);
-        //LineRenderer lineRenderer = GetComponent<LineRenderer>();
         GameObject constellationLine = new GameObject("ConstellationLine");
         LineRenderer lineRenderer = constellationLine.AddComponent<LineRenderer>();
-        lineRenderer.material = new Material(Shader.Find("Standard"));
-        lineRenderer.material.color = Color.white;
 
+        lineRenderer.material = lineMaterial; // Use the custom material
 
-        //LineRenderer lineRenderer = gameObject.AddComponent<LineRenderer>();
-        //lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-        //lineRenderer.material.color = Color.white;
+        // Set the width of the line
+        lineRenderer.startWidth = 0.5f; // Start width of the line
+        lineRenderer.endWidth = 0.5f;   // End width of the line
 
-        if (lineRenderer != null)
-        {
-            //Debug.Log("line renderer is not null");
-            
-            lineRenderer.positionCount = 2;
-            lineRenderer.SetPosition(0, starPosition_1);
-            lineRenderer.SetPosition(1, starPosition_2);
+        // Optionally, add a gradient
+        Gradient gradient = new Gradient();
+        gradient.SetKeys(
+            new GradientColorKey[] { new GradientColorKey(Color.white, 0.0f), new GradientColorKey(Color.white, 1.0f) },
+            new GradientAlphaKey[] { new GradientAlphaKey(0.5f, 0.0f), new GradientAlphaKey(0, 0.5f) }
+        );
+        lineRenderer.colorGradient = gradient;
 
-            //Add collider
-            //BoxCollider collider = constellationLine.AddComponent<BoxCollider>();
-            //collider.isTrigger = true; // Set as trigger if you don't want it to physically block objects
-            //AdjustColliderToLine(collider, starPosition_1, starPosition_2);
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, starPosition_1);
+        lineRenderer.SetPosition(1, starPosition_2);
 
-
-            LineRenderers.Add(lineRenderer);
-            constellation.LineRenderers.Add(lineRenderer);
-        }
-
+        LineRenderers.Add(lineRenderer);
+        constellation.LineRenderers.Add(lineRenderer);
     }
 
     //void AdjustColliderToLine(BoxCollider collider, Vector3 startPoint, Vector3 endPoint)
     //{
-        //Vector3 midPoint = (startPoint + endPoint) / 2;
-        //collider.transform.position = midPoint; // Position at the midpoint
+    //Vector3 midPoint = (startPoint + endPoint) / 2;
+    //collider.transform.position = midPoint; // Position at the midpoint
 
-        //float lineLength = Vector3.Distance(startPoint, endPoint);
-        // Assuming the line's thickness is minimal, adjust the X or Y scale for the collider's thickness
-        //collider.size = new Vector3(10f, 10f, lineLength); // Z is length here
+    //float lineLength = Vector3.Distance(startPoint, endPoint);
+    // Assuming the line's thickness is minimal, adjust the X or Y scale for the collider's thickness
+    //collider.size = new Vector3(10f, 10f, lineLength); // Z is length here
 
-        // Correctly orient the collider
-        //Vector3 vectorToTarget = endPoint - startPoint;
-        //Quaternion targetRotation = Quaternion.LookRotation(vectorToTarget);
-        // Apply rotation. Because BoxCollider is along the z-axis, this directly applies.
-        //collider.transform.rotation = targetRotation;
+    // Correctly orient the collider
+    //Vector3 vectorToTarget = endPoint - startPoint;
+    //Quaternion targetRotation = Quaternion.LookRotation(vectorToTarget);
+    // Apply rotation. Because BoxCollider is along the z-axis, this directly applies.
+    //collider.transform.rotation = targetRotation;
     //}
 
     Bounds CalculateConstellationBounds(Constellation constellation)
@@ -619,6 +625,7 @@ public class StarData
     public float ABSMAG, MAG;
     public float VX, VY, VZ;
     public float VX_ori, VY_ori, VZ_ori;
+    public float X0_ori, Y0_ori, Z0_ori;
     public string SPECT;
 }
 

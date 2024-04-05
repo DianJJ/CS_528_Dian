@@ -7,11 +7,8 @@ using UnityEngine.EventSystems; // Required for event systems
 public class ConstellationHover : MonoBehaviour
 {
  // Assign your info panel here
-    public GameObject infoPanelTuc; // Assign your info panel here
-    public GameObject infoPanelVul; // Assign your info panel here
-    public GameObject infoPanelLMi; // Assign your info panel here
-    public GameObject infoPanelAri; // Assign your info panel here
-    public GameObject infoPanelLib;
+    public GameObject infoPanelUMa; 
+    public GameObject infoPanelLMi; 
     void Start()
     {
         HidePanel();
@@ -26,28 +23,16 @@ public class ConstellationHover : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit))
         {
-            //Debug.Log($"Hit: {hit.collider.gameObject.name} with tag {hit.collider.tag}");
+            Debug.Log($"Hit: {hit.collider.gameObject.name} with tag {hit.collider.tag}");
             // Check if the hit object is part of a constellation
-            if (hit.collider.gameObject.CompareTag("Lib")) // Make sure your constellation lines have this tag
+            if (hit.collider.gameObject.CompareTag("UMa")) // Make sure your constellation lines have this tag
             {
-                ShowPanelLib(hit.collider.gameObject);
-            }
-            if (hit.collider.gameObject.CompareTag("Tuc")) // Make sure your constellation lines have this tag
-            {
-                ShowPanelTuc(hit.collider.gameObject);
-            }
-            if (hit.collider.gameObject.CompareTag("Vul")) // Make sure your constellation lines have this tag
-            {
-                ShowPanelVul(hit.collider.gameObject);
+                ShowPanelUMa(hit.collider.gameObject);
             }
             if (hit.collider.gameObject.CompareTag("LMi")) // Make sure your constellation lines have this tag
             {
                 Debug.Log("hit LMi");
                 ShowPanelLMi(hit.collider.gameObject);
-            }
-            if (hit.collider.gameObject.CompareTag("Ari")) // Make sure your constellation lines have this tag
-            {
-                ShowPanelAri(hit.collider.gameObject);
             }
         }
         else
@@ -58,22 +43,10 @@ public class ConstellationHover : MonoBehaviour
         
     
 
-    void ShowPanelLib(GameObject hitObject)
+    void ShowPanelUMa(GameObject hitObject)
     {
         // Position and update your panel based on the hitObject or its data
-        infoPanelLib.SetActive(true);
-        // Update panel information here based on the hitObject's data or associated constellation
-    }
-    void ShowPanelTuc(GameObject hitObject)
-    {
-    // Position and update your panel based on the hitObject or its data
-        infoPanelTuc.SetActive(true);
-        // Update panel information here based on the hitObject's data or associated constellation
-    }
-    void ShowPanelVul(GameObject hitObject)
-    {
-        // Position and update your panel based on the hitObject or its data
-        infoPanelVul.SetActive(true);
+        infoPanelUMa.SetActive(true);
         // Update panel information here based on the hitObject's data or associated constellation
     }
     void ShowPanelLMi(GameObject hitObject)
@@ -82,21 +55,12 @@ public class ConstellationHover : MonoBehaviour
         infoPanelLMi.SetActive(true);
         // Update panel information here based on the hitObject's data or associated constellation
     }
-    void ShowPanelAri(GameObject hitObject)
-    {
-        // Position and update your panel based on the hitObject or its data
-        infoPanelAri.SetActive(true);
-        // Update panel information here based on the hitObject's data or associated constellation
-    }
 
 
     void HidePanel()
     {
             
-            infoPanelTuc.SetActive(false);
-            infoPanelVul.SetActive(false);
+            infoPanelUMa.SetActive(false);
             infoPanelLMi.SetActive(false);
-            infoPanelAri.SetActive(false);
-            infoPanelLib.SetActive(false);
     }
 }
