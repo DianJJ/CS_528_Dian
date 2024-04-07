@@ -14,6 +14,12 @@ public class ShiningStar : MonoBehaviour
     private bool constellationLineRendererEnable = true;
 
     public TextAsset csvFile;
+    public TextAsset constellationDataAsset;
+    public TextAsset constellationChineseDataAsset;
+    public TextAsset constellationIndianDataAsset;
+    public TextAsset constellationEgyptionDataAsset;
+    public TextAsset constellationKoreanDataAsset;
+    public TextAsset constellationRomanianDataAsset;
 
     public Material starMaterial;
     public Material lineMaterial;
@@ -22,23 +28,27 @@ public class ShiningStar : MonoBehaviour
     {
         LoadDataFromCSV("Assets/module-omicron/athyg_31_reduced_m10.csv");
         CreateStars();
-        LoadConstellations("Assets/module-omicron/constellationship.fab");
+        LoadConstellations();
         DrawConstellations();
 
-        foreach (Constellation constellation in constellations)
-        {
-            CreateConstellationCollider(constellation);
-        }
+        //foreach (Constellation constellation in constellations)
+        //{
+        //    CreateConstellationCollider(constellation);
+        //}
         //OnDrawGizmos();
 
     }
     void Update()
     {
-        UpdateConstellationLine();
-        foreach (Constellation constellation in constellations)
+        if (constellations[0].LineRenderers[0] != null)
         {
-            UpdateConstellationCollider(constellation);
+            UpdateConstellationLine();
         }
+
+        //foreach (Constellation constellation in constellations)
+        //{
+        //    UpdateConstellationCollider(constellation);
+        //}
     }
 
     void OnDrawGizmos()
@@ -134,86 +144,65 @@ public class ShiningStar : MonoBehaviour
             }
         }
     }
-    public void ToggleConstellationUrsaMajor()
+    public void ToggleConstellationModern()
     {
         // This assumes you have a way to enable/disable a constellation.
         // For example, you could disable all line renderers associated with this constellation.
-        Constellation constellation = GetConstellationByName("UMa");
-
-        bool isVisible = !constellation.LineRenderers[0].enabled;
-        foreach (var lineRenderer in constellation.LineRenderers)
-        {
-            lineRenderer.enabled = isVisible;
-        }
+        ClearExistingConstellations();
+        LoadConstellations();
+        DrawConstellations();
     }
-    public void ToggleConstellationLibra()
+
+    public void ToggleConstellationChinese()
     {
         // This assumes you have a way to enable/disable a constellation.
         // For example, you could disable all line renderers associated with this constellation.
-        Constellation constellation = GetConstellationByName("Lib");
-
-        bool isVisible = !constellation.LineRenderers[0].enabled;
-        foreach (var lineRenderer in constellation.LineRenderers)
-        {
-            lineRenderer.enabled = isVisible;
-        }
+        ClearExistingConstellations();
+        Debug.Log("clear");
+        LoadConstellationsChinese();
+        DrawConstellations();
     }
 
-    public void ToggleConstellationAri()
+    public void ToggleConstellationIndian()
     {
         // This assumes you have a way to enable/disable a constellation.
         // For example, you could disable all line renderers associated with this constellation.
-        Constellation constellation = GetConstellationByName("Ari");
-
-        bool isVisible = !constellation.LineRenderers[0].enabled;
-        foreach (var lineRenderer in constellation.LineRenderers)
-        {
-            lineRenderer.enabled = isVisible;
-        }
+        ClearExistingConstellations();
+        //Debug.Log("clear");
+        LoadConstellationsIndian();
+        DrawConstellations();
     }
 
-    public void ToggleConstellationLMi()
+    public void ToggleConstellationEgyption()
     {
         // This assumes you have a way to enable/disable a constellation.
         // For example, you could disable all line renderers associated with this constellation.
-        Constellation constellation = GetConstellationByName("LMi");
-        Debug.Log("IncreaseStarVelocity");
-        bool isVisible = !constellation.LineRenderers[0].enabled;
-        foreach (var lineRenderer in constellation.LineRenderers)
-        {
-            lineRenderer.enabled = isVisible;
-        }
+        ClearExistingConstellations();
+        //Debug.Log("clear");
+        LoadConstellationsEgyption();
+        DrawConstellations();
     }
 
-    public void ToggleConstellationVul()
+    public void ToggleConstellationKorean()
     {
         // This assumes you have a way to enable/disable a constellation.
         // For example, you could disable all line renderers associated with this constellation.
-        Constellation constellation = GetConstellationByName("Vul");
-
-        bool isVisible = !constellation.LineRenderers[0].enabled;
-        foreach (var lineRenderer in constellation.LineRenderers)
-        {
-            lineRenderer.enabled = isVisible;
-        }
+        ClearExistingConstellations();
+        //Debug.Log("clear");
+        LoadConstellationsKorean();
+        DrawConstellations();
     }
 
-    public void ToggleConstellationTuc()
+    public void ToggleConstellationRomanian()
     {
         // This assumes you have a way to enable/disable a constellation.
         // For example, you could disable all line renderers associated with this constellation.
-        Constellation constellation = GetConstellationByName("Tuc");
-
-        bool isVisible = !constellation.LineRenderers[0].enabled;
-        foreach (var lineRenderer in constellation.LineRenderers)
-        {
-            lineRenderer.enabled = isVisible;
-        }
+        ClearExistingConstellations();
+        //Debug.Log("clear");
+        LoadConstellationsRomanian();
+        DrawConstellations();
     }
-    //public void ToggleConstellationLine(bool showLine)
-    //{
-    //    constellationLineRenderer.enabled = showLine;
-    //}
+
 
     public void IncreaseStarVelocity()
     {
@@ -382,10 +371,10 @@ public class ShiningStar : MonoBehaviour
         }
     }
 
-    void LoadConstellations(string fabFilePath)
+    void LoadConstellations()
     {
-        string[] constellationLines = File.ReadAllLines(fabFilePath);
-
+        constellations = new List<Constellation>();
+        string[] constellationLines = constellationDataAsset.text.Split('\n');
         //Debug.Log("successful loading the constellation file");
 
 
@@ -458,6 +447,416 @@ public class ShiningStar : MonoBehaviour
             constellations.Add(constellation);
 
         }
+    }
+
+    void LoadConstellationsChinese()
+    {
+        constellations = new List<Constellation>();
+        string[] constellationLines = constellationChineseDataAsset.text.Split('\n');
+        Debug.Log("successful loading the constellation file");
+        Debug.Log(constellationLines.Length);
+
+
+        foreach (var constellationLine in constellationLines)
+        {
+            string[] constellationData = System.Text.RegularExpressions.Regex.Split(constellationLine, @"\s+");
+            //string[] constellationData = constellationLine.Split(' ');
+            Constellation constellation = new Constellation();
+
+            // Parse constellation data.
+            Debug.Log("constellationData.Length: " + constellationData.Length);
+            Debug.Log(constellationData[0]);
+            Debug.Log(constellationData[1]);
+            string constellationName = constellationData[0];
+            int starCount = int.Parse(constellationData[1]);
+
+            constellation.NAME = constellationName;
+
+            constellation.PAIR_NUMBER = starCount;
+            //Debug.Log("successful parsing the constellation file");
+
+            //The HIP (Hipparcos) number of stars begins from the third element.
+            for (int i = 2; i < constellationData.Length - 1; i += 2)
+            {
+                //Debug.Log("i: " + i + ", constellationData.Length: " + constellationData.Length);
+
+                //Debug.Log(constellationData.Length);
+                int hipNumber_1 = int.Parse(constellationData[i]);
+                //Debug.LogError("Index out of bounds while parsing constellation data.");
+                //Debug.Log(i + 1);
+                int hipNumber_2 = int.Parse(constellationData[i + 1]);
+
+                //Debug.Log("successful load the hip");
+                //Find the corresponding star objects.
+                //Debug.Log("hipNumber_1" + hipNumber_1);
+                //Debug.Log("hipNumber_2" + hipNumber_2);
+                GameObject starObject_1 = FindStarByHIP(hipNumber_1);
+
+                GameObject starObject_2 = FindStarByHIP(hipNumber_2);
+
+                //Debug.Log("successful find the star by hip");
+                if (starObject_1 != null && starObject_1 != null)
+                {
+                    //Debug.Log("successful add the star pair");
+                    Tuple<GameObject, GameObject> starpair = Tuple.Create(starObject_1, starObject_2);
+
+                    constellation.STAR_PAIRS.Add(starpair);
+                }
+
+
+
+                //if (starObject_1 != null && starObject_1 != null)
+                //{
+                //Create connecting lines or other geometric shapes representing constellations between stars.
+                //DrawConstellationLine(starObject_1.transform.position, starObject_2.transform.position);
+                //}
+                //if (i >= constellationData.Length - 2)
+                //{
+                //Debug.Log("Index out of bounds while parsing constellation data.");
+                //  break;  // 
+                //}
+            }
+            //Debug.Log("pair length:"+ constellation.STAR_PAIRS.Count);
+            //Debug.Log("successful add the constellation");
+            //if (constellation.STAR_PAIRS.Count == starCount)
+            //{
+            //    constellations.Add(constellation);
+            //}
+            constellations.Add(constellation);
+            Debug.Log("add contellation");
+
+        }
+    }
+
+    void LoadConstellationsEgyption()
+    {
+        constellations = new List<Constellation>();
+        string[] constellationLines = constellationEgyptionDataAsset.text.Split('\n');
+        Debug.Log("successful loading the constellation file");
+        Debug.Log(constellationLines.Length);
+
+
+        foreach (var constellationLine in constellationLines)
+        {
+            string[] constellationData = System.Text.RegularExpressions.Regex.Split(constellationLine, @"\s+");
+            //string[] constellationData = constellationLine.Split(' ');
+            Constellation constellation = new Constellation();
+
+            // Parse constellation data.
+            Debug.Log("constellationData.Length: " + constellationData.Length);
+            Debug.Log(constellationData[0]);
+            Debug.Log(constellationData[1]);
+            string constellationName = constellationData[0];
+            int starCount = int.Parse(constellationData[1]);
+
+            constellation.NAME = constellationName;
+
+            constellation.PAIR_NUMBER = starCount;
+            //Debug.Log("successful parsing the constellation file");
+
+            //The HIP (Hipparcos) number of stars begins from the third element.
+            for (int i = 2; i < constellationData.Length - 1; i += 2)
+            {
+                //Debug.Log("i: " + i + ", constellationData.Length: " + constellationData.Length);
+
+                //Debug.Log(constellationData.Length);
+                int hipNumber_1 = int.Parse(constellationData[i]);
+                //Debug.LogError("Index out of bounds while parsing constellation data.");
+                //Debug.Log(i + 1);
+                int hipNumber_2 = int.Parse(constellationData[i + 1]);
+
+                //Debug.Log("successful load the hip");
+                //Find the corresponding star objects.
+                //Debug.Log("hipNumber_1" + hipNumber_1);
+                //Debug.Log("hipNumber_2" + hipNumber_2);
+                GameObject starObject_1 = FindStarByHIP(hipNumber_1);
+
+                GameObject starObject_2 = FindStarByHIP(hipNumber_2);
+
+                //Debug.Log("successful find the star by hip");
+                if (starObject_1 != null && starObject_1 != null)
+                {
+                    //Debug.Log("successful add the star pair");
+                    Tuple<GameObject, GameObject> starpair = Tuple.Create(starObject_1, starObject_2);
+
+                    constellation.STAR_PAIRS.Add(starpair);
+                }
+
+
+
+                //if (starObject_1 != null && starObject_1 != null)
+                //{
+                //Create connecting lines or other geometric shapes representing constellations between stars.
+                //DrawConstellationLine(starObject_1.transform.position, starObject_2.transform.position);
+                //}
+                //if (i >= constellationData.Length - 2)
+                //{
+                //Debug.Log("Index out of bounds while parsing constellation data.");
+                //  break;  // 
+                //}
+            }
+            //Debug.Log("pair length:"+ constellation.STAR_PAIRS.Count);
+            //Debug.Log("successful add the constellation");
+            //if (constellation.STAR_PAIRS.Count == starCount)
+            //{
+            //    constellations.Add(constellation);
+            //}
+            constellations.Add(constellation);
+            Debug.Log("add contellation");
+
+        }
+    }
+
+    void LoadConstellationsIndian()
+    {
+        constellations = new List<Constellation>();
+        string[] constellationLines = constellationIndianDataAsset.text.Split('\n');
+        //Debug.Log("successful loading the constellation file");
+        Debug.Log(constellationLines.Length);
+
+
+        foreach (var constellationLine in constellationLines)
+        {
+            string[] constellationData = System.Text.RegularExpressions.Regex.Split(constellationLine, @"\s+");
+            //string[] constellationData = constellationLine.Split(' ');
+            Constellation constellation = new Constellation();
+
+            // Parse constellation data.
+            Debug.Log("constellationData.Length: " + constellationData.Length);
+            Debug.Log(constellationData[0]);
+            Debug.Log(constellationData[1]);
+            string constellationName = constellationData[0];
+            int starCount = int.Parse(constellationData[1]);
+
+            constellation.NAME = constellationName;
+
+            constellation.PAIR_NUMBER = starCount;
+            //Debug.Log("successful parsing the constellation file");
+
+            //The HIP (Hipparcos) number of stars begins from the third element.
+            for (int i = 2; i < constellationData.Length - 1; i += 2)
+            {
+                //Debug.Log("i: " + i + ", constellationData.Length: " + constellationData.Length);
+
+                //Debug.Log(constellationData.Length);
+                int hipNumber_1 = int.Parse(constellationData[i]);
+                //Debug.LogError("Index out of bounds while parsing constellation data.");
+                //Debug.Log(i + 1);
+                int hipNumber_2 = int.Parse(constellationData[i + 1]);
+
+                //Debug.Log("successful load the hip");
+                //Find the corresponding star objects.
+                //Debug.Log("hipNumber_1" + hipNumber_1);
+                //Debug.Log("hipNumber_2" + hipNumber_2);
+                GameObject starObject_1 = FindStarByHIP(hipNumber_1);
+
+                GameObject starObject_2 = FindStarByHIP(hipNumber_2);
+
+                //Debug.Log("successful find the star by hip");
+                if (starObject_1 != null && starObject_1 != null)
+                {
+                    //Debug.Log("successful add the star pair");
+                    Tuple<GameObject, GameObject> starpair = Tuple.Create(starObject_1, starObject_2);
+
+                    constellation.STAR_PAIRS.Add(starpair);
+                }
+
+
+
+                //if (starObject_1 != null && starObject_1 != null)
+                //{
+                //Create connecting lines or other geometric shapes representing constellations between stars.
+                //DrawConstellationLine(starObject_1.transform.position, starObject_2.transform.position);
+                //}
+                //if (i >= constellationData.Length - 2)
+                //{
+                //Debug.Log("Index out of bounds while parsing constellation data.");
+                //  break;  // 
+                //}
+            }
+            //Debug.Log("pair length:"+ constellation.STAR_PAIRS.Count);
+            //Debug.Log("successful add the constellation");
+            //if (constellation.STAR_PAIRS.Count == starCount)
+            //{
+            //    constellations.Add(constellation);
+            //}
+            constellations.Add(constellation);
+            Debug.Log("add contellation");
+
+        }
+    }
+
+    void LoadConstellationsKorean()
+    {
+        constellations = new List<Constellation>();
+        string[] constellationLines = constellationKoreanDataAsset.text.Split('\n');
+        //Debug.Log("successful loading the constellation file");
+        //Debug.Log(constellationLines.Length);
+
+
+        foreach (var constellationLine in constellationLines)
+        {
+            string[] constellationData = System.Text.RegularExpressions.Regex.Split(constellationLine, @"\s+");
+            //string[] constellationData = constellationLine.Split(' ');
+            Constellation constellation = new Constellation();
+
+            // Parse constellation data.
+            Debug.Log("constellationData.Length: " + constellationData.Length);
+            Debug.Log(constellationData[0]);
+            Debug.Log(constellationData[1]);
+            string constellationName = constellationData[0];
+            int starCount = int.Parse(constellationData[1]);
+
+            constellation.NAME = constellationName;
+
+            constellation.PAIR_NUMBER = starCount;
+            //Debug.Log("successful parsing the constellation file");
+
+            //The HIP (Hipparcos) number of stars begins from the third element.
+            for (int i = 2; i < constellationData.Length - 1; i += 2)
+            {
+                //Debug.Log("i: " + i + ", constellationData.Length: " + constellationData.Length);
+
+                //Debug.Log(constellationData.Length);
+                int hipNumber_1 = int.Parse(constellationData[i]);
+                //Debug.LogError("Index out of bounds while parsing constellation data.");
+                //Debug.Log(i + 1);
+                int hipNumber_2 = int.Parse(constellationData[i + 1]);
+
+                //Debug.Log("successful load the hip");
+                //Find the corresponding star objects.
+                //Debug.Log("hipNumber_1" + hipNumber_1);
+                //Debug.Log("hipNumber_2" + hipNumber_2);
+                GameObject starObject_1 = FindStarByHIP(hipNumber_1);
+
+                GameObject starObject_2 = FindStarByHIP(hipNumber_2);
+
+                //Debug.Log("successful find the star by hip");
+                if (starObject_1 != null && starObject_1 != null)
+                {
+                    //Debug.Log("successful add the star pair");
+                    Tuple<GameObject, GameObject> starpair = Tuple.Create(starObject_1, starObject_2);
+
+                    constellation.STAR_PAIRS.Add(starpair);
+                }
+
+
+
+                //if (starObject_1 != null && starObject_1 != null)
+                //{
+                //Create connecting lines or other geometric shapes representing constellations between stars.
+                //DrawConstellationLine(starObject_1.transform.position, starObject_2.transform.position);
+                //}
+                //if (i >= constellationData.Length - 2)
+                //{
+                //Debug.Log("Index out of bounds while parsing constellation data.");
+                //  break;  // 
+                //}
+            }
+            //Debug.Log("pair length:"+ constellation.STAR_PAIRS.Count);
+            //Debug.Log("successful add the constellation");
+            //if (constellation.STAR_PAIRS.Count == starCount)
+            //{
+            //    constellations.Add(constellation);
+            //}
+            constellations.Add(constellation);
+            Debug.Log("add contellation");
+
+        }
+    }
+
+    void LoadConstellationsRomanian()
+    {
+        constellations = new List<Constellation>();
+        string[] constellationLines = constellationRomanianDataAsset.text.Split('\n');
+        //Debug.Log("successful loading the constellation file");
+        //Debug.Log(constellationLines.Length);
+
+
+        foreach (var constellationLine in constellationLines)
+        {
+            string[] constellationData = System.Text.RegularExpressions.Regex.Split(constellationLine, @"\s+");
+            //string[] constellationData = constellationLine.Split(' ');
+            Constellation constellation = new Constellation();
+
+            // Parse constellation data.
+            Debug.Log("constellationData.Length: " + constellationData.Length);
+            Debug.Log(constellationData[0]);
+            Debug.Log(constellationData[1]);
+            string constellationName = constellationData[0];
+            int starCount = int.Parse(constellationData[1]);
+
+            constellation.NAME = constellationName;
+
+            constellation.PAIR_NUMBER = starCount;
+            //Debug.Log("successful parsing the constellation file");
+
+            //The HIP (Hipparcos) number of stars begins from the third element.
+            for (int i = 2; i < constellationData.Length - 1; i += 2)
+            {
+                //Debug.Log("i: " + i + ", constellationData.Length: " + constellationData.Length);
+
+                //Debug.Log(constellationData.Length);
+                int hipNumber_1 = int.Parse(constellationData[i]);
+                //Debug.LogError("Index out of bounds while parsing constellation data.");
+                //Debug.Log(i + 1);
+                int hipNumber_2 = int.Parse(constellationData[i + 1]);
+
+                //Debug.Log("successful load the hip");
+                //Find the corresponding star objects.
+                //Debug.Log("hipNumber_1" + hipNumber_1);
+                //Debug.Log("hipNumber_2" + hipNumber_2);
+                GameObject starObject_1 = FindStarByHIP(hipNumber_1);
+
+                GameObject starObject_2 = FindStarByHIP(hipNumber_2);
+
+                //Debug.Log("successful find the star by hip");
+                if (starObject_1 != null && starObject_1 != null)
+                {
+                    //Debug.Log("successful add the star pair");
+                    Tuple<GameObject, GameObject> starpair = Tuple.Create(starObject_1, starObject_2);
+
+                    constellation.STAR_PAIRS.Add(starpair);
+                }
+
+
+
+                //if (starObject_1 != null && starObject_1 != null)
+                //{
+                //Create connecting lines or other geometric shapes representing constellations between stars.
+                //DrawConstellationLine(starObject_1.transform.position, starObject_2.transform.position);
+                //}
+                //if (i >= constellationData.Length - 2)
+                //{
+                //Debug.Log("Index out of bounds while parsing constellation data.");
+                //  break;  // 
+                //}
+            }
+            //Debug.Log("pair length:"+ constellation.STAR_PAIRS.Count);
+            //Debug.Log("successful add the constellation");
+            //if (constellation.STAR_PAIRS.Count == starCount)
+            //{
+            //    constellations.Add(constellation);
+            //}
+            constellations.Add(constellation);
+            Debug.Log("add contellation");
+
+        }
+    }
+
+    void ClearExistingConstellations()
+    {   
+        if (LineRenderers != null)
+        {
+            foreach (var line in LineRenderers)
+            {
+                if (line != null) Destroy(line);
+            }
+            LineRenderers.Clear();
+        }
+
+        LineRenderers.Clear();
+
     }
 
     Color GetColorBySpectralType(string spectralType)
