@@ -9,11 +9,14 @@ public class ShiningStar : MonoBehaviour
     public string csvFilePath; // CSV file path.
 
     private List<StarData> starsData = new List<StarData>();
+    private Dictionary<string, int> exoDataDictionary = new Dictionary<string, int>();
     private List<Constellation> constellations = new List<Constellation>(); 
     private List<LineRenderer> LineRenderers = new List<LineRenderer>();
     private bool constellationLineRendererEnable = true;
 
+    public AudioSource audioSource;
     public TextAsset csvFile;
+    public TextAsset exoFile;
     public TextAsset constellationDataAsset;
     public TextAsset constellationChineseDataAsset;
     public TextAsset constellationIndianDataAsset;
@@ -26,11 +29,13 @@ public class ShiningStar : MonoBehaviour
 
     void Start()
     {
-        LoadDataFromCSV("Assets/module-omicron/athyg_31_reduced_m10.csv");
+        LoadExoFromCSV();
+        LoadDataFromCSV();
         CreateStars();
         LoadConstellations();
         DrawConstellations();
-
+        audioSource = GetComponent<AudioSource>();
+        audioSource.Play();
         //foreach (Constellation constellation in constellations)
         //{
         //    CreateConstellationCollider(constellation);
@@ -130,6 +135,7 @@ public class ShiningStar : MonoBehaviour
         return constellations.Find(constellation => constellation.NAME.Equals(name, StringComparison.OrdinalIgnoreCase));
     }
 
+
     public void ToggleConstellationVisibility()
     {
         // Toggle the state of constellationLineRendererEnable
@@ -203,24 +209,60 @@ public class ShiningStar : MonoBehaviour
         DrawConstellations();
     }
 
+    public void ToggleColorScheme()
+    {
+        //Debug.Log("IncreaseStarVelocity");
+        foreach (var star in starsData)
+        {
+            GameObject starObject = FindStarByHIP(star.HIP);
+            Color starColor = GetColorByExoplanetCount(star.Exo);
+            starObject.GetComponent<Renderer>().material.SetColor("_Color", starColor);
+        }
+    }
 
     public void IncreaseStarVelocity()
     {
         Debug.Log("IncreaseStarVelocity");
         foreach (var star in starsData)
         {
-            float increaseTime = 1000.0f; // Define how much you want to increase the velocity
+            float increaseTime = 10000.0f; // Define how much you want to increase the velocity
             star.VX *= increaseTime;
             star.VY *= increaseTime;
             star.VZ *= increaseTime;
         }
     }
 
+    public void IncreaseStarScale()
+    {
+        //Debug.Log("IncreaseStarVelocity");
+        foreach (var star in starsData)
+        {
+            float increaseTime = 10.0f; // Define how much you want to increase the velocity
+            star.X0 *= increaseTime;
+            star.Y0 *= increaseTime;
+            star.Z0 *= increaseTime;
+            GameObject starObject = FindStarByHIP(star.HIP);
+            starObject.transform.position = new Vector3(star.X0, star.Y0, star.Z0);
+        }
+    }
+    public void DecreaseStarScale()
+    {
+        //Debug.Log("IncreaseStarVelocity");
+        foreach (var star in starsData)
+        {
+            float increaseTime = 0.1f; // Define how much you want to increase the velocity
+            star.X0 *= increaseTime;
+            star.Y0 *= increaseTime;
+            star.Z0 *= increaseTime;
+            GameObject starObject = FindStarByHIP(star.HIP);
+            starObject.transform.position = new Vector3(star.X0, star.Y0, star.Z0);
+        }
+    }
     public void DecreaseStarVelocity()
     {
         foreach (var star in starsData)
         {
-            float increaseTime = 0.001f; // Define how much you want to increase the velocity
+            float increaseTime = 0.0001f; // Define how much you want to increase the velocity
             star.VX *= increaseTime;
             star.VY *= increaseTime;
             star.VZ *= increaseTime;
@@ -253,7 +295,7 @@ public class ShiningStar : MonoBehaviour
 
 
 
-    void LoadDataFromCSV(string csvFilePath)
+    void LoadDataFromCSV()
     {
         try
         {
@@ -292,6 +334,15 @@ public class ShiningStar : MonoBehaviour
                     star.Y0_ori = float.Parse(values[4]) * 5;
                     star.Z0_ori= float.Parse(values[5]) * 5;
                     star.SPECT = values[11];
+                    if (exoDataDictionary.TryGetValue(values[1], out var exoCount))
+                    {
+                       
+                        star.Exo = exoCount;
+                    }
+                    else
+                    {
+                        star.Exo = 0; 
+                    }
                 }
 
                 // Check and add valid star data.
@@ -311,28 +362,65 @@ public class ShiningStar : MonoBehaviour
         }
     }
 
-    //void CreateStars()
-    //{
-     //   foreach (var starData in starsData)
-     //   {
-            // Create star objects based on StarData.
-     //       GameObject starObject = Instantiate(starPrefab, new Vector3(starData.X0, starData.Y0, starData.Z0), Quaternion.identity);
-     //       starObject.name = $"Star_{starData.HIP}";
+    public void LoadExoFromCSV()
+    {
+        try
+        {
+            string[] csvLines = exoFile.text.Split('\n');
+            var starsData = new System.Collections.Generic.List<StarData>();
 
-            // Set star size based on brightness.
-     //       float starSize = Mathf.Clamp(5.0f / starData.ABSMAG, 0.1f, 50.0f);
-     //       starObject.transform.localScale = new Vector3(starSize, starSize, starSize);
+            foreach (string line in csvLines)
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
 
-            // Set star color based on spectral type.
-     //       Color starColor = GetColorBySpectralType(starData.SPECT);
-     //       starObject.GetComponent<Renderer>().material.color = starColor;
+                string[] values = line.Split(',');
+                if (values.Length >= 2)
+                {
+                    string hipNumberWithPrefix = values[0].Trim();
+                    if (!string.IsNullOrEmpty(hipNumberWithPrefix) && hipNumberWithPrefix.StartsWith("HIP"))
+                    {
+                        string hipNumberWithoutPrefix = hipNumberWithPrefix.Substring(4).Trim();
+                        Debug.Log(hipNumberWithoutPrefix);
+                        if (int.TryParse(values[1].Trim(), out int exoplanetCount))
+                        {
+                            //Debug.Log(exoplanetCount);
+                            exoDataDictionary[hipNumberWithoutPrefix] = exoplanetCount;
+                        }
+                    }
+                }
+            }
 
-            //Place the star objects in the scene.
-    //        starObject.transform.SetParent(transform);
+            Debug.Log("Loaded " + starsData.Count + " stars with exoplanets, excluding 'HIP' prefix.");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error loading data from CSV: " + e.Message);
+        }
+    }
 
-    //        starObject.AddComponent<StarOrbit>().InitializeOrbit(starData, transform);
-    //    }
-    //}
+
+//void CreateStars()
+//{
+//   foreach (var starData in starsData)
+//   {
+// Create star objects based on StarData.
+//       GameObject starObject = Instantiate(starPrefab, new Vector3(starData.X0, starData.Y0, starData.Z0), Quaternion.identity);
+//       starObject.name = $"Star_{starData.HIP}";
+
+// Set star size based on brightness.
+//       float starSize = Mathf.Clamp(5.0f / starData.ABSMAG, 0.1f, 50.0f);
+//       starObject.transform.localScale = new Vector3(starSize, starSize, starSize);
+
+// Set star color based on spectral type.
+//       Color starColor = GetColorBySpectralType(starData.SPECT);
+//       starObject.GetComponent<Renderer>().material.color = starColor;
+
+//Place the star objects in the scene.
+//        starObject.transform.SetParent(transform);
+
+//        starObject.AddComponent<StarOrbit>().InitializeOrbit(starData, transform);
+//    }
+//}
 
     void CreateStars()
     {
@@ -875,6 +963,30 @@ public class ShiningStar : MonoBehaviour
         }
     }
 
+    Color GetColorByExoplanetCount(int planetCount)
+    {
+        if (planetCount <= 0)
+        {
+            return Color.gray; // No exoplanets
+        }
+        else if (planetCount == 1)
+        {
+            return Color.green; // Single exoplanet
+        }
+        else if (planetCount > 1 && planetCount <= 3)
+        {
+            return Color.blue; // Small number of exoplanets
+        }
+        else if (planetCount > 3 && planetCount <= 5)
+        {
+            return new Color(1.0f, 0.65f, 0.0f); // Medium number of exoplanets, using RGB for orange
+        }
+        else
+        {
+            return Color.red; // Large number of exoplanets
+        }
+    }
+
     void DrawConstellations()
     {
         // Read the constellation file.
@@ -1026,8 +1138,14 @@ public class StarData
     public float VX_ori, VY_ori, VZ_ori;
     public float X0_ori, Y0_ori, Z0_ori;
     public string SPECT;
+    public int Exo;
 }
 
+public class ExoData
+{
+    public int HIP;
+    public int NUM;
+}
 
 public class Constellation
 {
