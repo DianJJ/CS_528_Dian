@@ -219,7 +219,7 @@ public class ShiningStar : MonoBehaviour
             Color starColor = GetColorBySpectralType(star.SPECT);
             if (ColoChange)
             {
-                starObject.GetComponent<Renderer>().material.SetColor("_Color", expColor);
+                starObject.GetComponent<Renderer>().material.SetColor("_Color", exoColor);
                 ColoChange = !ColoChange;
             }
             else
