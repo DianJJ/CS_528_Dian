@@ -13,7 +13,7 @@ public class ShiningStar : MonoBehaviour
     private List<Constellation> constellations = new List<Constellation>(); 
     private List<LineRenderer> LineRenderers = new List<LineRenderer>();
     private bool constellationLineRendererEnable = true;
-
+    private bool ColoChange = true;
     public AudioSource audioSource;
     public TextAsset csvFile;
     public TextAsset exoFile;
@@ -215,9 +215,20 @@ public class ShiningStar : MonoBehaviour
         foreach (var star in starsData)
         {
             GameObject starObject = FindStarByHIP(star.HIP);
-            Color starColor = GetColorByExoplanetCount(star.Exo);
-            starObject.GetComponent<Renderer>().material.SetColor("_Color", starColor);
+            Color exoColor = GetColorByExoplanetCount(star.Exo);
+            Color starColor = GetColorBySpectralType(star.SPECT);
+            if (ColoChange)
+            {
+                starObject.GetComponent<Renderer>().material.SetColor("_Color", expColor);
+                ColoChange = !ColoChange;
+            }
+            else
+            {
+                starObject.GetComponent<Renderer>().material.SetColor("_Color", starColor);
+                ColoChange = !ColoChange;
+            }
         }
+
     }
 
     public void IncreaseStarVelocity()
